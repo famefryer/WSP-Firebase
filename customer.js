@@ -88,18 +88,25 @@ const updateCustomerInfo = function (req,res){
             let customerName = req.get('name')
             let customerPhone = req.get('phone')
             let customerAddress = req.get('address')
-            let customerEmail = req.get('email')
+            let customerProvince = req.get('province')
+            let customerZipcode = req.get('zipcode')
+            let customerDistrict = req.get('district')
+            let customerBDay = req.get('bday')
+            let customerGender = req.get('gender')
 
             let changeCustomerInfo = customerRef.doc(customerID).update({
-                'customerName':customerName,
-                'customerPhone':customerPhone,
-                'customerAddress':customerAddress,
-                'customerEmail':customerEmail
+                'name':customerName,
+                'phone':customerPhone,
+                'address':customerAddress,
+                'province':customerProvince,
+                'zipcode':customerZipcode,
+                'district':customerDistrict,
+                'bday':customerBDay,
+                'gender':customerGender
             }).then(ref=>{
                 res_data={}
                 res_data['return_code'] = '200'
                 res_data['descrip'] = 'success to update the data'
-
                 successResponseGet(res,res_data)
                 return ref
             }).catch(err=>{

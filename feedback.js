@@ -52,6 +52,26 @@ const addFeedback = function (req,res){
     })
 }
 
+const removeFeedback = function (req,res){
+    return cors(req,res,()=>{
+        if(req.method === 'POST'){
+            let feedbackID = req.get('feedbackID')
+
+            var removeFeed = feedbackRef.doc(feedbackID).delete().then(ref => {
+                let res_data = {}
+                res_data['return_code'] = '200'
+                res_data['descrip'] = 'Success to remove '+feedbackID+' on db.'
+                successResponseGet(res,res_data)
+                return ref.id
+            }).catch(err=>{
+                errorResponse(res,err.details)
+            })
+        }else {
+            errorResponse(res,"Error request method")
+        }
+    })
+}
+
 module.exports = {
-    getFeedbackList,addFeedback,
+    getFeedbackList,addFeedback,removeFeedback,
 }

@@ -175,23 +175,70 @@ const getAccountByUsername = function (req,res){
         if(req.method==='POST'){
             let username = req.get('username')
 
-            var account = accountsRef.where('username','==',username).get().then(snap=>{
-                let res_data = {}
-                
+            let res_data = {}
+            var account = accountsRef.where('username','==',username).get()
+            .then(snap=>{
                 if(!snap.empty){
-                    res_data['return_code'] = '200'
-                    res_data['descrip'] = 'Success to query account from username.'
+                    let customerID = ''
                     snap.forEach(doc=>{
                         res_data['account'] = doc.data() 
+                        customerID = res_data['account'].customerID
                         delete res_data['account'].password
                     })
+                    return customerRef.doc(customerID).get()
                 } else {
-                    res_data['return_code'] = '400'
-                    res_data['descrip'] = 'Username not founded.'
+                    throw new Error('Username not found.')
                 }
+            })
+            .then(ref => {
+                if(ref.exists){
+                    res_data['customer'] = ref.data()
+                    res_data['return_code'] = '200'
+                    res_data['descrip'] = 'Success to query account from username.'
+                    successResponseGet(res,res_data)
+                    return
+                }
+                else {
+                    throw new Error('Customer data not found.')
+                }   
+            })
+            .catch(err=>{
+                errorResponse(res,err.details)
+            })
+        }
+        else {
+            errorResponse(res,"Error request method")
+        }
+    })
+}
+
+const removeAccount = function (req,res){
+    return cors(req,res,()=>{
+        if(req.method==='POST'){
+            let username = req.get('username')
+
+            let removeAccount = accountsRef.where('username','==',username).get()
+            .then(snap => {
+                
+                if(!snap.empty){
+                    var refID = ''
+                    snap.forEach(doc=>{
+                        refID = doc.id
+                    })
+                    return accountsRef.doc(refID).delete()
+                } 
+                else{
+                    throw new Error('account not found in database system.')
+                }
+            })
+            .then(ref => {
+                let res_data = {}
+                res_data['return_code'] = '200'
+                res_data['descrip'] = 'Success to delete '+username+' from database system.'
                 successResponseGet(res,res_data)
-                return snap
-            }).catch(err=>{
+                return ref            
+            })
+            .catch(err=>{
                 errorResponse(res,err.details)
             })
         }
@@ -234,7 +281,7 @@ const loginToAdmin = function (req,res){
 }
 
 module.exports = {
-    addAccount,isUsernameTaken,isEmailTaken,getAccountList,login,getAccountByUsername,loginToAdmin,
+    addAccount,isUsernameTaken,isEmailTaken,getAccountList,login,getAccountByUsername,loginToAdmin,removeAccount,
 }
 
 
